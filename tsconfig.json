@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "lib": [
+            "ES2022",
+            "dom"
+        ],
+        "module": "ES2022",
+        "target": "ES2022",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "typeRoots": [
+            "node_modules/@types","@types"
+        ],
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "types": [
+            "node", "jest", "rascal"
+        ],
+        "declaration": true
+    },
+    "include": [
+        "src/**/**.ts",
+        "test/**/**.ts",
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "ts-node": {
+        "esm": true,
+        "experimentalSpecifierResolution": "node"
+    }
+}

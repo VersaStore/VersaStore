@@ -3,8 +3,17 @@
     "version": "0.0.1",
     "description": "Versatile Storage abstraction, just like flysystem for PHP",
     "main": "dist/main.js",
+    "type": "module",
     "scripts": {
-        "test": "npm run test"
+        "build": "tsc -p .",
+        "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
+        "prettier:check": "npm run prettier -- --check",
+        "prettier:fix": "npm run prettier -- --write",
+        "eslint:check": "npm run eslint",
+        "eslint:fix": "npm run eslint -- --fix",
+        "ts-node": "ts-node",
+        "prettier": "prettier '{src,test}/**/*.{js,ts}'",
+        "eslint": "eslint --ext .ts src/ test/"
     },
     "repository": {
         "type": "git",
@@ -22,6 +31,20 @@
     },
     "homepage": "https://github.com/VersaStore/versastore-core#readme",
     "devDependencies": {
-        "@types/node": "^20.4.5"
+        "@types/node": "^20.4.5",
+        "eslint": "^8.43.0",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-import-resolver-typescript": "^3.5.5",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-prettier": "^4.2.1",
+        "eslint-plugin-unused-imports": "^2.0.0",
+        "jest": "^29.5.0",
+        "json5": "^2.2.3",
+        "prettier": "^2.8.8",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "ts-prune": "^0.10.3",
+        "ts-unused-exports": "^9.0.5",
+        "typescript": "^5.1.6"
     }
 }

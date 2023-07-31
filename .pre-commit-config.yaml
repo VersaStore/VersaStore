@@ -1,0 +1,50 @@
+# See https://pre-commit.com for more information
+
+# See https://pre-commit.com/#pre-commit-configyaml---top-level
+fail_fast: true
+
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: detect-private-key
+      - id: forbid-submodules
+      - id: mixed-line-ending
+        args: [ '--fix=lf' ]
+      - id: check-yaml
+        exclude: '.gitlab-ci.*'
+      - id: check-json
+        exclude: 'test/.*|tsconfig\.json|tsconfig\.base\.json'
+
+  - repo: https://gitlab.com/bmares/check-json5
+    rev: v1.0.0
+    hooks:
+      - id: check-json5
+
+  # Failure on install.
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.5
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.3
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: run-local
+        name: "Run local checks"
+        entry: bash .pre-commit.sh
+        language: system
+        pass_filenames: false
+        verbose: true
