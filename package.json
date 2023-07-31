@@ -1,8 +1,13 @@
 {
     "name": "@versastore/core",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "Versatile Storage abstraction, just like flysystem for PHP",
     "type": "module",
+    "types": "lib/index.d.ts",
+    "main": "lib/index.js",
+    "files": [
+        "lib"
+    ],
     "scripts": {
         "build": "tsc -p .",
         "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
@@ -21,7 +26,8 @@
     "keywords": [
         "store",
         "s3",
-        "flysystem"
+        "flysystem",
+        "filesystem"
     ],
     "author": "Stephan Meijer <me@stephanmeijer.com>",
     "license": "GPL-3.0-or-later",
