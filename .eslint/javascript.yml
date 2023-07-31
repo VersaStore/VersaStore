@@ -1,0 +1,15 @@
+---
+rules:
+    no-extra-semi: error
+    no-debugger: error
+    no-dupe-else-if: error
+    no-unreachable: error
+    no-dupe-keys: error
+    no-const-assign: error
+    eqeqeq: error
+    quotes: [ "error", "single", { allowTemplateLiterals: true, avoidEscape: true } ]
+    quote-props: [ "error", "as-needed" ]
+    no-multiple-empty-lines: [ "error", { "max": 1, "maxEOF": 0 } ]
+    eol-last: [ "error", "always" ]
+    no-shadow: off
+    no-unused-vars: off

@@ -1,0 +1,30 @@
+---
+extends:
+    - ./.eslint/javascript.yml
+    - ./.eslint/typescript.yml
+    - plugin:import/recommended
+    - plugin:prettier/recommended
+    - prettier
+
+parser: '@typescript-eslint/parser'
+
+parserOptions:
+    sourceType: module
+    project: tsconfig.json
+
+plugins:
+    - import
+    - unused-imports
+
+settings:
+    import/parsers:
+        "@typescript-eslint/parser": [ ".ts", ".tsx" ]
+    import/resolver:
+        typescript:
+            alwaysTryTypes: true
+            project: tsconfig.json
+        node: true
+
+rules:
+    unused-imports/no-unused-imports: error
+    import/no-named-as-default-member: off

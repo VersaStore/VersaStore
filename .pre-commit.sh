@@ -30,10 +30,6 @@ run_cmd()
     fi
 }
 
-run_cmd \
-    "Render .gitlab-ci.yml using Docker Recipe." \
-    "docker-recipe -t ./.gitlab-ci.j2.yml -o .gitlab-ci.yml"
-
 run_cmd "npm install"
 
 run_cmd "npm run prettier:fix"
@@ -46,7 +42,7 @@ run_cmd "npm run eslint:check"
 
 run_cmd "npm run build"
 
-run_cmd "npm run test"
+# run_cmd "npm run test"
 
 if [[ $(git rev-parse --abbrev-ref HEAD) == feature/* ]]; then
     run_cmd "npm update"

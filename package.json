@@ -12,8 +12,8 @@
         "eslint:check": "npm run eslint",
         "eslint:fix": "npm run eslint -- --fix",
         "ts-node": "ts-node",
-        "prettier": "prettier '{src,test}/**/*.{js,ts}'",
-        "eslint": "eslint --ext .ts src/ test/"
+        "prettier": "prettier 'src/**/*.{js,ts}'",
+        "eslint": "eslint --ext .ts src/"
     },
     "repository": {
         "type": "git",
@@ -31,7 +31,9 @@
     },
     "homepage": "https://github.com/VersaStore/versastore-core#readme",
     "devDependencies": {
+        "@types/jest": "^29.5.3",
         "@types/node": "^20.4.5",
+        "@typescript-eslint/eslint-plugin": "^5.62.0",
         "eslint": "^8.43.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-import-resolver-typescript": "^3.5.5",

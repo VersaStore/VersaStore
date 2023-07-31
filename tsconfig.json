@@ -17,7 +17,7 @@
         "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
         "types": [
-            "node", "jest", "rascal"
+            "node", "jest"
         ],
         "declaration": true
     },
