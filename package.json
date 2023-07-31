@@ -1,6 +1,6 @@
 {
-    "name": "@versastore/core",
-    "version": "0.0.3",
+    "name": "root",
+    "version": "0.1.0",
     "description": "Versatile Storage abstraction, just like flysystem for PHP",
     "type": "module",
     "types": "lib/index.d.ts",
@@ -8,16 +8,19 @@
     "files": [
         "lib"
     ],
+    "workspaces": [
+        "packages/*"
+    ],
     "scripts": {
-        "build": "tsc -p .",
+        "build": "lerna run build --parallel",
         "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
         "prettier:check": "npm run prettier -- --check",
         "prettier:fix": "npm run prettier -- --write",
         "eslint:check": "npm run eslint",
         "eslint:fix": "npm run eslint -- --fix",
         "ts-node": "ts-node",
-        "prettier": "prettier 'src/**/*.{js,ts}'",
-        "eslint": "eslint --ext .ts src/"
+        "prettier": "prettier 'packages/**/*.{js,ts}'",
+        "eslint": "eslint --ext .ts packages/"
     },
     "repository": {
         "type": "git",
@@ -47,11 +50,15 @@
         "eslint-plugin-unused-imports": "^2.0.0",
         "jest": "^29.5.0",
         "json5": "^2.2.3",
+        "lerna": "^7.1.4",
         "prettier": "^2.8.8",
         "ts-jest": "^29.1.0",
         "ts-node": "^10.9.1",
         "ts-prune": "^0.10.3",
         "ts-unused-exports": "^9.0.5",
         "typescript": "^5.1.6"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.379.1"
     }
 }

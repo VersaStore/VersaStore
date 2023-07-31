@@ -18,15 +18,8 @@
         "types": [
             "node", "jest"
         ],
-        "declaration": true,
-        "outDir": "./lib"
+        "declaration": true
     },
-    "include": [
-        "src/**/**.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ],
     "ts-node": {
         "esm": true,
         "experimentalSpecifierResolution": "node"

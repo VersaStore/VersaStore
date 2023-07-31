@@ -1,0 +1,41 @@
+{
+    "name": "@versastore/adapter-s3",
+    "version": "0.1.0",
+    "description": "Versatile Storage abstraction, just like flysystem for PHP. Adapter for S3.",
+    "type": "module",
+    "types": "lib/index.d.ts",
+    "main": "lib/index.js",
+    "files": [
+        "lib"
+    ],
+    "scripts": {
+        "build": "tsc -p ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/VersaStore/versastore-core.git"
+    },
+    "keywords": [
+        "store",
+        "s3",
+        "flysystem",
+        "filesystem"
+    ],
+    "author": "Stephan Meijer <me@stephanmeijer.com>",
+    "license": "GPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/VersaStore/versastore-core/issues"
+    },
+    "homepage": "https://github.com/VersaStore/versastore-core#readme",
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.379.1",
+        "@versastore/core": "^0.1.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.3",
+        "@types/node": "^20.4.5",
+        "jest": "^29.5.0",
+        "json5": "^2.2.3",
+        "typescript": "^5.1.6"
+    }
+}
