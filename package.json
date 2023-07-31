@@ -24,7 +24,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+ssh://git@github.com/VersaStore/versastore-core.git"
+        "url": "git+ssh://git@github.com/VersaStore/VersaStore.git"
     },
     "keywords": [
         "store",
@@ -35,9 +35,9 @@
     "author": "Stephan Meijer <me@stephanmeijer.com>",
     "license": "GPL-3.0-or-later",
     "bugs": {
-        "url": "https://github.com/VersaStore/versastore-core/issues"
+        "url": "https://github.com/VersaStore/VersaStore/issues"
     },
-    "homepage": "https://github.com/VersaStore/versastore-core#readme",
+    "homepage": "https://github.com/VersaStore/VersaStore#readme",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/node": "^20.4.5",
