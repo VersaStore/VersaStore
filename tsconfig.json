@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "outDir": "dist",
         "lib": [
             "ES2022",
             "dom"
@@ -19,11 +18,11 @@
         "types": [
             "node", "jest"
         ],
-        "declaration": true
+        "declaration": true,
+        "outDir": "./lib"
     },
     "include": [
-        "src/**/**.ts",
-        "test/**/**.ts",
+        "src/**/**.ts"
     ],
     "exclude": [
         "node_modules"

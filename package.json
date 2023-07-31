@@ -2,7 +2,6 @@
     "name": "@versastore/core",
     "version": "0.0.1",
     "description": "Versatile Storage abstraction, just like flysystem for PHP",
-    "main": "dist/main.js",
     "type": "module",
     "scripts": {
         "build": "tsc -p .",
