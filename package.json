@@ -1,0 +1,24 @@
+{
+    "name": "@versastore/core",
+    "version": "0.0.1",
+    "description": "Versatile Storage abstraction, just like flysystem for PHP",
+    "main": "dist/main.js",
+    "scripts": {
+        "test": "npm run test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/VersaStore/versastore-core.git"
+    },
+    "keywords": [
+        "store",
+        "s3",
+        "flysystem"
+    ],
+    "author": "Stephan Meijer <me@stephanmeijer.com>",
+    "license": "GPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/VersaStore/versastore-core/issues"
+    },
+    "homepage": "https://github.com/VersaStore/versastore-core#readme"
+}
