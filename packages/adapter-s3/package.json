@@ -1,6 +1,6 @@
 {
     "name": "@versastore/adapter-s3",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Versatile Storage abstraction, just like flysystem for PHP. Adapter for S3.",
     "type": "module",
     "types": "lib/index.d.ts",
@@ -29,7 +29,7 @@
     "homepage": "https://github.com/VersaStore/VersaStore#readme",
     "dependencies": {
         "@aws-sdk/client-s3": "^3.379.1",
-        "@versastore/core": "^0.2.0"
+        "@versastore/core": "^0.3.0"
     },
     "devDependencies": {
         "@types/jest": "^29.5.3",

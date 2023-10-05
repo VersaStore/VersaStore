@@ -1,6 +1,6 @@
 {
     "name": "@versastore/core",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Versatile Storage abstraction, just like flysystem for PHP.",
     "type": "module",
     "types": "lib/index.d.ts",
