@@ -1,5 +1,6 @@
-import type { S3Client } from '@aws-sdk/client-s3';
+import type { GetObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
 import {
+    DeleteObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
     PutObjectCommand,
@@ -31,45 +32,60 @@ export class S3FileSystem implements FileSystemInterface {
         return this.metadataToFileMetadata(object);
     }
 
-    public async hasFile(path: string): Promise<boolean> {
+    public async has(path: string): Promise<boolean> {
         return this.getMetadata(path)
             .then(() => true)
             .catch(() => false);
     }
 
-    public async writeFile(file: FileSystemFile): Promise<void> {
+    public async write(
+        file: FileSystemFile,
+        meta?: FileMetadata,
+    ): Promise<void> {
         const command = new PutObjectCommand({
             ...this.bucketConfig,
             Key: file.getPath(),
             Body: file.getContent().getContent(),
-            ContentType: file.getMetadata().contentType,
+            ContentType: meta?.contentType,
         });
 
         await this.s3.send(command);
     }
 
-    public async readFile(path: string): Promise<FileSystemFile> {
+    public async read(path: string): Promise<FileSystemFile> {
         const command = new GetObjectCommand({
             ...this.bucketConfig,
             Key: path,
         });
 
-        const object = await this.s3.send(command);
+        const object: GetObjectCommandOutput = await this.s3.send(command);
 
         const body = await object.Body?.transformToByteArray();
 
         return new FileSystemFile(
             path,
             new Uint8ArrayFileContent(body ?? new Uint8Array(0)),
-            this.metadataToFileMetadata(object),
         );
     }
 
     private metadataToFileMetadata(meta: S3Metadata): FileMetadata {
         return {
             contentType: meta.ContentType,
-            contentLength: meta.ContentLength,
+            size: meta.ContentLength,
             lastModified: meta.LastModified,
         };
+    }
+
+    public async destroy(path: string | FileSystemFile): Promise<void> {
+        if (!(typeof path === 'string')) {
+            return this.destroy(path.getPath());
+        }
+
+        const command = new DeleteObjectCommand({
+            Bucket: this.bucketConfig.Bucket,
+            Key: path,
+        });
+
+        await this.s3.send(command);
     }
 }
