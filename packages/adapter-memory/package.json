@@ -37,5 +37,10 @@
         "json5": "^2.2.3",
         "typescript": "^5.1.6"
     },
-    "gitHead": "063e56d2642d5451e98e465afffea73d36277b71"
+    "directories": {
+        "lib": "lib"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }
