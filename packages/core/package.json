@@ -35,5 +35,5 @@
         "@types/node": "^20.4.5",
         "jest": "^29.5.0"
     },
-    "gitHead": "cba9724ce26ae22b5ef104257857b87289778cc9"
+    "gitHead": "063e56d2642d5451e98e465afffea73d36277b71"
 }
