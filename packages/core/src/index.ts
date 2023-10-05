@@ -1,4 +1,5 @@
 export * from './FileSystemInterface.js';
+export * from './ListOptions.js';
 export * from './file/FileSystemFile.js';
 export * from './file/FileMetadata.js';
 export * from './file/content/BufferFileContent.js';

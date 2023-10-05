@@ -3,10 +3,16 @@ import {
     DeleteObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
+    ListObjectsCommand,
     PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import type { FileMetadata, FileSystemInterface } from '@versastore/core';
-import { FileSystemFile, Uint8ArrayFileContent } from '@versastore/core';
+import {
+    FileSystemFile,
+    ListOptions,
+    Uint8ArrayFileContent,
+} from '@versastore/core';
+import path from 'path';
 
 interface S3Metadata {
     ContentType?: string;
@@ -21,10 +27,10 @@ export class S3FileSystem implements FileSystemInterface {
         this.bucketConfig = { Bucket: bucket };
     }
 
-    public async getMetadata(path: string): Promise<FileMetadata> {
+    public async getMetadata(filepath: string): Promise<FileMetadata> {
         const command = new HeadObjectCommand({
             ...this.bucketConfig,
-            Key: path,
+            Key: this.normalize(filepath),
         });
 
         const object = await this.s3.send(command);
@@ -32,8 +38,8 @@ export class S3FileSystem implements FileSystemInterface {
         return this.metadataToFileMetadata(object);
     }
 
-    public async has(path: string): Promise<boolean> {
-        return this.getMetadata(path)
+    public async has(filepath: string): Promise<boolean> {
+        return this.getMetadata(this.normalize(filepath))
             .then(() => true)
             .catch(() => false);
     }
@@ -44,7 +50,7 @@ export class S3FileSystem implements FileSystemInterface {
     ): Promise<void> {
         const command = new PutObjectCommand({
             ...this.bucketConfig,
-            Key: file.getPath(),
+            Key: this.normalize(file.getPath()),
             Body: file.getContent().getContent(),
             ContentType: meta?.contentType,
         });
@@ -52,10 +58,12 @@ export class S3FileSystem implements FileSystemInterface {
         await this.s3.send(command);
     }
 
-    public async read(path: string): Promise<FileSystemFile> {
+    public async read(filepath: string): Promise<FileSystemFile> {
+        const normalizedPath = this.normalize(filepath);
+
         const command = new GetObjectCommand({
             ...this.bucketConfig,
-            Key: path,
+            Key: normalizedPath,
         });
 
         const object: GetObjectCommandOutput = await this.s3.send(command);
@@ -63,7 +71,7 @@ export class S3FileSystem implements FileSystemInterface {
         const body = await object.Body?.transformToByteArray();
 
         return new FileSystemFile(
-            path,
+            normalizedPath,
             new Uint8ArrayFileContent(body ?? new Uint8Array(0)),
         );
     }
@@ -76,16 +84,66 @@ export class S3FileSystem implements FileSystemInterface {
         };
     }
 
-    public async destroy(path: string | FileSystemFile): Promise<void> {
-        if (!(typeof path === 'string')) {
-            return this.destroy(path.getPath());
+    public async destroy(
+        filepathOrFile: string | FileSystemFile,
+    ): Promise<void> {
+        if (typeof filepathOrFile !== 'string') {
+            return this.destroy(filepathOrFile.getPath());
         }
 
         const command = new DeleteObjectCommand({
             Bucket: this.bucketConfig.Bucket,
-            Key: path,
+            Key: this.normalize(filepathOrFile),
         });
 
         await this.s3.send(command);
+    }
+
+    public async list(
+        dirPath: string,
+        options: ListOptions = ListOptions.DEFAULT,
+    ): Promise<string[]> {
+        let normalizedPath = this.normalize(dirPath);
+
+        if (normalizedPath.endsWith('/')) {
+            normalizedPath = normalizedPath.slice(0, -1);
+        }
+
+        const command = new ListObjectsCommand({
+            ...this.bucketConfig,
+            Prefix: normalizedPath + '/',
+        });
+
+        const output = await this.s3.send(command);
+
+        let files = (output.Contents ?? [])
+            .filter(({ Key }): boolean => Key !== undefined)
+            .map(({ Key }): string => this.normalize(Key!));
+
+        if (!(options & ListOptions.INCLUDE_DOTFILES)) {
+            files = files.filter(
+                (filepath): boolean =>
+                    !filepath
+                        .split('/')
+                        .some((particle) => particle.startsWith('.')),
+            );
+        }
+
+        if (!(options & ListOptions.RECURSIVE)) {
+            files = files.filter(
+                (filepath): boolean =>
+                    normalizedPath === path.dirname(filepath),
+            );
+        }
+
+        return files;
+    }
+
+    private normalize(filepath: string): string {
+        if (!filepath.startsWith('/')) {
+            return this.normalize('/' + filepath);
+        }
+
+        return path.normalize(filepath);
     }
 }
