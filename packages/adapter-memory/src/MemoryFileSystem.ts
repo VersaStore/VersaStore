@@ -106,7 +106,7 @@ export class MemoryFileSystem implements FileSystemInterface {
         let normalizedPath = this.normalize(dirPath);
 
         if (!normalizedPath.endsWith('/') && normalizedPath !== '/') {
-            normalizedPath = normalizedPath + '/';
+            normalizedPath += '/';
         }
 
         let files = this.files.filter(({ file }): boolean =>
@@ -125,8 +125,8 @@ export class MemoryFileSystem implements FileSystemInterface {
         if (!(options & ListOptions.RECURSIVE)) {
             files = files.filter(
                 ({ file }): boolean =>
-                    normalizedPath ===
-                    path.dirname(this.normalize(file.getPath())),
+                    this.normalize(file.getPath()).split('/').length ===
+                    normalizedPath.split('/').length,
             );
         }
 

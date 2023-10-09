@@ -9,7 +9,7 @@
         "lib"
     ],
     "scripts": {
-        "build": "tsc -p ."
+        "build": "rm dist -rf && tsc -p ."
     },
     "repository": {
         "type": "git",

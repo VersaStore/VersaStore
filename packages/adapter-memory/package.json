@@ -9,8 +9,7 @@
         "lib"
     ],
     "scripts": {
-        "build": "tsc -p .",
-        "test": "vitest"
+        "build": "rm dist -rf && tsc -p ."
     },
     "repository": {
         "type": "git",
