@@ -1,1 +1,1 @@
-export * from './MemoryFileSystem';
+export * from './MemoryFileSystem.js';
