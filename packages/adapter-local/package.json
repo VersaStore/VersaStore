@@ -1,6 +1,6 @@
 {
     "name": "@versastore/adapter-local",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "Versatile Storage abstraction, just like flysystem for PHP. Adapter for S3.",
     "type": "module",
     "types": "lib/index.d.ts",
@@ -28,13 +28,13 @@
     },
     "homepage": "https://github.com/VersaStore/VersaStore#readme",
     "dependencies": {
-        "@versastore/core": "^0.3.0"
+        "@versastore/core": "^0.4.0"
     },
     "devDependencies": {
         "@types/node": "^20.4.5",
-        "vitest": "^0.34.6",
         "json5": "^2.2.3",
-        "typescript": "^5.1.6"
+        "typescript": "^5.1.6",
+        "vitest": "^0.34.6"
     },
     "directories": {
         "lib": "lib"
