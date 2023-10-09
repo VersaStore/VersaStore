@@ -1,25 +1,41 @@
-import type {
-    FileMetadata,
-    FileSystemFile,
-    FileSystemInterface,
-} from '@versastore/core';
+import type { FileMetadata, FileSystemInterface } from '@versastore/core';
+import { FileSystemFile, ListOptions } from '@versastore/core';
 import path from 'path';
-import { ListOptions } from '@versastore/core';
+
+interface MemoryFileSystemInternalFile {
+    file: FileSystemFile;
+    meta: FileMetadata;
+}
 
 export class MemoryFileSystem implements FileSystemInterface {
-    constructor(
-        private files: { file: FileSystemFile; meta: FileMetadata }[] = [],
-    ) {}
+    private files: MemoryFileSystemInternalFile[];
+
+    constructor(files: MemoryFileSystemInternalFile[] = []) {
+        this.files = files.map(({ file, meta }) => ({
+            file: new FileSystemFile(
+                this.normalize(file.getPath()),
+                file.getContent(),
+            ),
+            meta,
+        }));
+    }
 
     public async getMetadata(filepath: string): Promise<FileMetadata> {
         const normalizedPath = this.normalize(filepath);
 
-        return (
-            this.files.find(
-                ({ file }): boolean =>
-                    this.normalize(file.getPath()) === normalizedPath,
-            )?.meta ?? {}
+        const fileWithMeta = this.files.find(
+            ({ file }): boolean =>
+                this.normalize(file.getPath()) === normalizedPath,
         );
+
+        if (!fileWithMeta) {
+            throw new Error(`File ${normalizedPath} not found`);
+        }
+
+        return {
+            ...fileWithMeta.meta,
+            size: fileWithMeta.file.getContent().getByteLength(),
+        };
     }
 
     public async has(filepath: string): Promise<boolean> {
@@ -38,8 +54,17 @@ export class MemoryFileSystem implements FileSystemInterface {
         file: FileSystemFile,
         meta: FileMetadata = {},
     ): Promise<void> {
-        await this.destroy(this.normalize(file.getPath()));
-        this.files.push({ file, meta });
+        if (await this.has(file.getPath())) {
+            await this.destroy(this.normalize(file.getPath()));
+        }
+
+        this.files.push({
+            file: new FileSystemFile(
+                this.normalize(file.getPath()),
+                file.getContent(),
+            ),
+            meta,
+        });
     }
 
     public async read(filepath: string): Promise<FileSystemFile> {
@@ -51,7 +76,7 @@ export class MemoryFileSystem implements FileSystemInterface {
         );
 
         if (!fileWithMeta) {
-            throw new Error(`File ${filepath} not found`);
+            throw new Error(`File ${normalizedPath} not found`);
         }
 
         return fileWithMeta.file;
@@ -66,6 +91,8 @@ export class MemoryFileSystem implements FileSystemInterface {
 
         const normalizedPath = this.normalize(filepathOrFile);
 
+        await this.getMetadata(normalizedPath);
+
         this.files = this.files.filter(
             ({ file }): boolean =>
                 this.normalize(file.getPath()) !== normalizedPath,
@@ -78,12 +105,12 @@ export class MemoryFileSystem implements FileSystemInterface {
     ): Promise<string[]> {
         let normalizedPath = this.normalize(dirPath);
 
-        if (normalizedPath.endsWith('/')) {
-            normalizedPath = normalizedPath.slice(0, -1);
+        if (!normalizedPath.endsWith('/') && normalizedPath !== '/') {
+            normalizedPath = normalizedPath + '/';
         }
 
         let files = this.files.filter(({ file }): boolean =>
-            this.normalize(file.getPath()).startsWith(normalizedPath + '/'),
+            this.normalize(file.getPath()).startsWith(normalizedPath),
         );
 
         if (!(options & ListOptions.INCLUDE_DOTFILES)) {

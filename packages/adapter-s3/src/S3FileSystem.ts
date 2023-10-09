@@ -1,4 +1,8 @@
-import type { GetObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
+import type {
+    GetObjectCommandOutput,
+    HeadObjectCommandOutput,
+    S3Client,
+} from '@aws-sdk/client-s3';
 import {
     DeleteObjectCommand,
     GetObjectCommand,
@@ -28,12 +32,18 @@ export class S3FileSystem implements FileSystemInterface {
     }
 
     public async getMetadata(filepath: string): Promise<FileMetadata> {
+        const normalizedPath = this.normalize(filepath);
+
         const command = new HeadObjectCommand({
             ...this.bucketConfig,
-            Key: this.normalize(filepath),
+            Key: normalizedPath,
         });
 
-        const object = await this.s3.send(command);
+        const object: HeadObjectCommandOutput = await this.s3
+            .send(command)
+            .catch(() => {
+                throw new Error(`File ${normalizedPath} not found`);
+            });
 
         return this.metadataToFileMetadata(object);
     }
@@ -66,7 +76,11 @@ export class S3FileSystem implements FileSystemInterface {
             Key: normalizedPath,
         });
 
-        const object: GetObjectCommandOutput = await this.s3.send(command);
+        const object: GetObjectCommandOutput = await this.s3
+            .send(command)
+            .catch(() => {
+                throw new Error(`File ${normalizedPath} not found`);
+            });
 
         const body = await object.Body?.transformToByteArray();
 
@@ -76,12 +90,22 @@ export class S3FileSystem implements FileSystemInterface {
         );
     }
 
-    private metadataToFileMetadata(meta: S3Metadata): FileMetadata {
-        return {
-            contentType: meta.ContentType,
-            size: meta.ContentLength,
-            lastModified: meta.LastModified,
-        };
+    private metadataToFileMetadata(s3meta: S3Metadata): FileMetadata {
+        const meta: FileMetadata = {};
+
+        if (s3meta.ContentLength) {
+            meta.size = s3meta.ContentLength;
+        }
+
+        if (s3meta.LastModified) {
+            meta.lastModified = s3meta.LastModified;
+        }
+
+        if (s3meta.ContentType?.length) {
+            meta.contentType = s3meta.ContentType;
+        }
+
+        return meta;
     }
 
     public async destroy(
@@ -91,12 +115,16 @@ export class S3FileSystem implements FileSystemInterface {
             return this.destroy(filepathOrFile.getPath());
         }
 
-        const command = new DeleteObjectCommand({
-            Bucket: this.bucketConfig.Bucket,
-            Key: this.normalize(filepathOrFile),
-        });
+        const normalizedPath = this.normalize(filepathOrFile);
 
-        await this.s3.send(command);
+        await this.getMetadata(normalizedPath);
+
+        await this.s3.send(
+            new DeleteObjectCommand({
+                Bucket: this.bucketConfig.Bucket,
+                Key: normalizedPath,
+            }),
+        );
     }
 
     public async list(
@@ -105,13 +133,13 @@ export class S3FileSystem implements FileSystemInterface {
     ): Promise<string[]> {
         let normalizedPath = this.normalize(dirPath);
 
-        if (normalizedPath.endsWith('/')) {
-            normalizedPath = normalizedPath.slice(0, -1);
+        if (!normalizedPath.endsWith('/') && normalizedPath !== '/') {
+            normalizedPath = normalizedPath + '/';
         }
 
         const command = new ListObjectsCommand({
             ...this.bucketConfig,
-            Prefix: normalizedPath + '/',
+            Prefix: normalizedPath,
         });
 
         const output = await this.s3.send(command);
@@ -132,7 +160,7 @@ export class S3FileSystem implements FileSystemInterface {
         if (!(options & ListOptions.RECURSIVE)) {
             files = files.filter(
                 (filepath): boolean =>
-                    normalizedPath === path.dirname(filepath),
+                    normalizedPath === path.dirname(this.normalize(filepath)),
             );
         }
 
@@ -140,6 +168,10 @@ export class S3FileSystem implements FileSystemInterface {
     }
 
     private normalize(filepath: string): string {
+        if (filepath === '/') {
+            return filepath;
+        }
+
         if (!filepath.startsWith('/')) {
             return this.normalize('/' + filepath);
         }
