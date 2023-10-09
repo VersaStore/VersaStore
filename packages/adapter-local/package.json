@@ -1,6 +1,6 @@
 {
     "name": "@versastore/adapter-local",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "Versatile Storage abstraction, just like flysystem for PHP. Adapter for S3.",
     "type": "module",
     "types": "lib/index.d.ts",
