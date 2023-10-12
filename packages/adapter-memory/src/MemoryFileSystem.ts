@@ -8,25 +8,21 @@ interface MemoryFileSystemInternalFile {
 }
 
 export class MemoryFileSystem implements FileSystemInterface {
-    private files: MemoryFileSystemInternalFile[];
+    private files: Map<string, MemoryFileSystemInternalFile> = new Map<
+        string,
+        MemoryFileSystemInternalFile
+    >();
 
     constructor(files: MemoryFileSystemInternalFile[] = []) {
-        this.files = files.map(({ file, meta }) => ({
-            file: new FileSystemFile(
-                this.normalize(file.getPath()),
-                file.getContent(),
-            ),
-            meta,
-        }));
+        for (const { file, meta } of files) {
+            this.writeSync(file, meta);
+        }
     }
 
     public async getMetadata(filepath: string): Promise<FileMetadata> {
         const normalizedPath = this.normalize(filepath);
 
-        const fileWithMeta = this.files.find(
-            ({ file }): boolean =>
-                this.normalize(file.getPath()) === normalizedPath,
-        );
+        const fileWithMeta = this.files.get(normalizedPath);
 
         if (!fileWithMeta) {
             throw new Error(`File ${normalizedPath} not found`);
@@ -39,30 +35,21 @@ export class MemoryFileSystem implements FileSystemInterface {
     }
 
     public async has(filepath: string): Promise<boolean> {
-        const normalizedPath = this.normalize(filepath);
-
-        return (
-            undefined !==
-            this.files.find(
-                ({ file }): boolean =>
-                    this.normalize(file.getPath()) === normalizedPath,
-            )
-        );
+        return this.files.has(this.normalize(filepath));
     }
 
     public async write(
         file: FileSystemFile,
         meta: FileMetadata = {},
     ): Promise<void> {
-        if (await this.has(file.getPath())) {
-            await this.destroy(this.normalize(file.getPath()));
-        }
+        this.writeSync(file, meta);
+    }
 
-        this.files.push({
-            file: new FileSystemFile(
-                this.normalize(file.getPath()),
-                file.getContent(),
-            ),
+    private writeSync(file: FileSystemFile, meta: FileMetadata = {}): void {
+        const normalizedPath = this.normalize(file.getPath());
+
+        this.files.set(normalizedPath, {
+            file: new FileSystemFile(normalizedPath, file.getContent()),
             meta,
         });
     }
@@ -70,10 +57,7 @@ export class MemoryFileSystem implements FileSystemInterface {
     public async read(filepath: string): Promise<FileSystemFile> {
         const normalizedPath = this.normalize(filepath);
 
-        const fileWithMeta = this.files.find(
-            ({ file }): boolean =>
-                this.normalize(file.getPath()) === normalizedPath,
-        );
+        const fileWithMeta = this.files.get(normalizedPath);
 
         if (!fileWithMeta) {
             throw new Error(`File ${normalizedPath} not found`);
@@ -91,12 +75,18 @@ export class MemoryFileSystem implements FileSystemInterface {
 
         const normalizedPath = this.normalize(filepathOrFile);
 
-        await this.getMetadata(normalizedPath);
+        const fileList = await this.list(normalizedPath);
 
-        this.files = this.files.filter(
-            ({ file }): boolean =>
-                this.normalize(file.getPath()) !== normalizedPath,
-        );
+        if (!(await this.has(normalizedPath)) && fileList.length === 0) {
+            throw new Error(`File ${normalizedPath} not found`);
+        }
+
+        this.files.delete(this.normalize(filepathOrFile));
+
+        // Recursive deletion!
+        for (const filePath of fileList) {
+            this.files.delete(filePath);
+        }
     }
 
     public async list(
@@ -109,28 +99,28 @@ export class MemoryFileSystem implements FileSystemInterface {
             normalizedPath += '/';
         }
 
-        let files = this.files.filter(({ file }): boolean =>
-            this.normalize(file.getPath()).startsWith(normalizedPath),
+        let files = [...this.files.keys()].filter((filePath: string): boolean =>
+            this.normalize(filePath).startsWith(normalizedPath),
         );
 
         if (!(options & ListOptions.INCLUDE_DOTFILES)) {
             files = files.filter(
-                ({ file }): boolean =>
-                    !this.normalize(file.getPath())
+                (filePath: string): boolean =>
+                    !filePath
                         .split('/')
                         .some((particle) => particle.startsWith('.')),
             );
         }
 
         if (!(options & ListOptions.RECURSIVE)) {
-            files = files.filter(
-                ({ file }): boolean =>
-                    this.normalize(file.getPath()).split('/').length ===
+            return files.filter(
+                (filePath: string): boolean =>
+                    filePath.split('/').length ===
                     normalizedPath.split('/').length,
             );
         }
 
-        return files.map(({ file }): string => this.normalize(file.getPath()));
+        return files;
     }
 
     private normalize(filepath: string): string {

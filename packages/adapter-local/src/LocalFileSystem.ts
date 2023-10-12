@@ -4,6 +4,7 @@ import {
     FileSystemFile,
     ListOptions,
 } from '@versastore/core';
+import type { Stats } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -16,7 +17,7 @@ export class LocalFileSystem implements FileSystemInterface {
         const stats = await fs
             .stat(path.join(this.basePath, normalizedPath))
             .catch(() => {
-                throw new Error(`File ${normalizedPath} not found`);
+                throw this.createErrorNotFound(normalizedPath);
             });
 
         return {
@@ -50,7 +51,20 @@ export class LocalFileSystem implements FileSystemInterface {
             return;
         }
 
-        throw new Error(`File ${this.normalize(filepath)} not found`);
+        throw this.createErrorNotFound(filepath);
+    }
+
+    protected createErrorNotFound(filepath: string): Error {
+        return new Error(`File ${this.normalize(filepath)} not found`);
+    }
+
+    protected async stat(filepath: string): Promise<Stats> {
+        const normalizedPath = this.normalize(filepath);
+        const fullPath = path.join(this.basePath, normalizedPath);
+
+        return fs.stat(fullPath).catch(() => {
+            throw this.createErrorNotFound(normalizedPath);
+        });
     }
 
     public async read(filepath: string): Promise<FileSystemFile> {
@@ -72,11 +86,25 @@ export class LocalFileSystem implements FileSystemInterface {
             return this.destroy(filepathOrFile.getPath());
         }
 
-        await this.assertExists(filepathOrFile);
+        const normalizedPath = this.normalize(filepathOrFile);
 
-        await fs.unlink(
-            path.join(this.basePath, this.normalize(filepathOrFile)),
-        );
+        const stats = await this.stat(filepathOrFile);
+
+        const fullPath = path.join(this.basePath, normalizedPath);
+
+        if (stats.isFile() || stats.isSymbolicLink()) {
+            return fs.unlink(fullPath);
+        }
+
+        if (stats.isDirectory()) {
+            const files = await fs.readdir(fullPath);
+
+            for (const file of files) {
+                await this.destroy(path.join(normalizedPath, file));
+            }
+
+            await fs.rmdir(fullPath);
+        }
     }
 
     public async list(
@@ -92,10 +120,6 @@ export class LocalFileSystem implements FileSystemInterface {
             items = items.filter((item) => !item.name.startsWith('.'));
         }
 
-        if (!(options & ListOptions.INCLUDE_SYMLINKS)) {
-            items = items.filter((item) => !item.isSymbolicLink());
-        }
-
         const files = items
             .filter((item) => item.isFile())
             .map((item) => path.join(normalizedDirPath, item.name));
@@ -103,8 +127,6 @@ export class LocalFileSystem implements FileSystemInterface {
         const directories = items
             .filter((item) => item.isDirectory())
             .map((item) => path.join(normalizedDirPath, item.name));
-
-        //throw new Error(JSON.stringify({ directories, files, dirPath, normalizedDirPath, fullPath }));
 
         // If recursive option is set, list subdirectories as well
         if (options & ListOptions.RECURSIVE) {

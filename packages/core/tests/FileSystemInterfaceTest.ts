@@ -207,9 +207,11 @@ export function FileSystemInterfaceTest<
 
             const files = await fs.list('/');
 
-            expect(files.sort()).toEqual(
-                ['/test.txt', '/test2.txt', '/.DS_Store'].sort(),
-            );
+            expect(files.sort()).toEqual([
+                '/.DS_Store',
+                '/test.txt',
+                '/test2.txt',
+            ]);
 
             await tearDownFS(fs, lifetimeOpts);
         });
@@ -219,13 +221,11 @@ export function FileSystemInterfaceTest<
 
             const files = await fs.list('/', ListOptions.RECURSIVE);
 
-            expect(files.sort()).toEqual(
-                [
-                    '/test.txt',
-                    '/test2.txt',
-                    '/file/in/some/subdirectory.html',
-                ].sort(),
-            );
+            expect(files.sort()).toEqual([
+                '/file/in/some/subdirectory.html',
+                '/test.txt',
+                '/test2.txt',
+            ]);
 
             await tearDownFS(fs, lifetimeOpts);
         });
@@ -248,18 +248,16 @@ export function FileSystemInterfaceTest<
                 ListOptions.RECURSIVE | ListOptions.INCLUDE_DOTFILES,
             );
 
-            expect(files.sort()).toEqual(
-                [
-                    '/test.txt',
-                    '/test2.txt',
-                    '/file/in/some/subdirectory.html',
-                    '/.DS_Store',
-                    '/.hidden/Hello',
-                    '/.hidden/.DS_Store',
-                    '/sub/.dir/.DS_Store',
-                    '/sub/dir/.DS_Store',
-                ].sort(),
-            );
+            expect(files.sort()).toEqual([
+                '/.DS_Store',
+                '/.hidden/.DS_Store',
+                '/.hidden/Hello',
+                '/file/in/some/subdirectory.html',
+                '/sub/.dir/.DS_Store',
+                '/sub/dir/.DS_Store',
+                '/test.txt',
+                '/test2.txt',
+            ]);
 
             await tearDownFS(fs, lifetimeOpts);
         });
@@ -385,6 +383,28 @@ export function FileSystemInterfaceTest<
             await expect(fs.destroy('/does/not/exist')).rejects.toThrow(
                 new Error(`File /does/not/exist not found`),
             );
+
+            await tearDownFS(fs, lifetimeOpts);
+        });
+
+        test('destroy entire folder: /.hidden', async () => {
+            const { fs, lifetimeOpts } = await setupFS();
+
+            await fs.destroy('/.hidden');
+
+            const fileList = await fs.list(
+                '/',
+                ListOptions.INCLUDE_DOTFILES | ListOptions.RECURSIVE,
+            );
+
+            expect(fileList.sort()).toEqual([
+                '/.DS_Store',
+                '/file/in/some/subdirectory.html',
+                '/sub/.dir/.DS_Store',
+                '/sub/dir/.DS_Store',
+                '/test.txt',
+                '/test2.txt',
+            ]);
 
             await tearDownFS(fs, lifetimeOpts);
         });

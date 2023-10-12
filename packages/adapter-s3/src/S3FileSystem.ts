@@ -117,14 +117,28 @@ export class S3FileSystem implements FileSystemInterface {
 
         const normalizedPath = this.normalize(filepathOrFile);
 
-        await this.getMetadata(normalizedPath);
+        const hasFile = await this.has(normalizedPath);
 
-        await this.s3.send(
-            new DeleteObjectCommand({
-                Bucket: this.bucketConfig.Bucket,
-                Key: normalizedPath,
-            }),
+        const fileList = await this.list(
+            normalizedPath,
+            ListOptions.RECURSIVE | ListOptions.INCLUDE_DOTFILES,
         );
+
+        if (!hasFile && fileList.length === 0) {
+            throw new Error(`File ${normalizedPath} not found`);
+        }
+
+        fileList.push(normalizedPath);
+
+        // Recursive deletion!
+        for (const filePath of fileList) {
+            await this.s3.send(
+                new DeleteObjectCommand({
+                    Bucket: this.bucketConfig.Bucket,
+                    Key: filePath,
+                }),
+            );
+        }
     }
 
     public async list(
