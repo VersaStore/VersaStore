@@ -39,11 +39,7 @@ export class S3FileSystem implements FileSystemInterface {
             Key: normalizedPath,
         });
 
-        const object: HeadObjectCommandOutput = await this.s3
-            .send(command)
-            .catch(() => {
-                throw new Error(`File ${normalizedPath} not found`);
-            });
+        const object: HeadObjectCommandOutput = await this.s3.send(command);
 
         return this.metadataToFileMetadata(object);
     }
@@ -76,11 +72,7 @@ export class S3FileSystem implements FileSystemInterface {
             Key: normalizedPath,
         });
 
-        const object: GetObjectCommandOutput = await this.s3
-            .send(command)
-            .catch(() => {
-                throw new Error(`File ${normalizedPath} not found`);
-            });
+        const object: GetObjectCommandOutput = await this.s3.send(command);
 
         const body = await object.Body?.transformToByteArray();
 

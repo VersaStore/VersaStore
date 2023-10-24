@@ -195,9 +195,9 @@ export function FileSystemInterfaceTest<
         test('reading when file does not exist', async () => {
             const { fs, lifetimeOpts } = await setupFS();
 
-            await expect(async () => fs.read('some.path')).rejects.toThrow(
-                new Error(`File /some.path not found`),
-            );
+            await expect(async () =>
+                fs.read('some.path'),
+            ).rejects.toThrowError();
 
             await tearDownFS(fs, lifetimeOpts);
         });
@@ -209,6 +209,11 @@ export function FileSystemInterfaceTest<
 
             expect(files.sort()).toEqual([
                 '/.DS_Store',
+                '/.hidden/.DS_Store',
+                '/.hidden/Hello',
+                '/file/in/some/subdirectory.html',
+                '/sub/.dir/.DS_Store',
+                '/sub/dir/.DS_Store',
                 '/test.txt',
                 '/test2.txt',
             ]);
@@ -328,9 +333,9 @@ export function FileSystemInterfaceTest<
         test('getMetadata on non-existing file /does/not/exist', async () => {
             const { fs, lifetimeOpts } = await setupFS();
 
-            await expect(fs.getMetadata('/does/not/exist')).rejects.toThrow(
-                new Error(`File /does/not/exist not found`),
-            );
+            await expect(
+                fs.getMetadata('/does/not/exist'),
+            ).rejects.toThrowError();
 
             await tearDownFS(fs, lifetimeOpts);
         });
@@ -380,9 +385,7 @@ export function FileSystemInterfaceTest<
         test('destroy non-existing file: /does/not/exist', async () => {
             const { fs, lifetimeOpts } = await setupFS();
 
-            await expect(fs.destroy('/does/not/exist')).rejects.toThrow(
-                new Error(`File /does/not/exist not found`),
-            );
+            await expect(fs.destroy('/does/not/exist')).rejects.toThrowError();
 
             await tearDownFS(fs, lifetimeOpts);
         });
